@@ -1,0 +1,42 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+<head>
+<style type="text/css">
+#input {
+  width:800px;
+  padding:15px;
+  font-size:1.5em;
+  border:1px solid #ddd;
+  margin-bottom:20px;
+}
+#container {
+  border:1px solid #ddd;
+  padding:1em;
+}
+</style>
+</head> 
+
+<body id="" class=""> 
+  <div id="wrapper">
+    <form method="get" action="./results.php">
+      <input type="text" id="input" placeholder="Search..." />
+    </form>
+    <div id="container">
+      Search for something...
+    </div>
+  </div>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/mootools/1.4.5/mootools-yui-compressed.js"></script>
+<script type="text/javascript" src="../Assets/MooTools-more.js"></script>
+<script type="text/javascript" src="../../Source/MooTools-Class.Accessor/Source/MooTools-Class.Accessor.js"></script>
+<script type="text/javascript" src="../../Source/Searcher.js"></script>
+<script type="text/javascript">
+window.addEvent('domready',function() {
+
+  var searcher = new Searcher('input','container',{
+
+  });
+
+});
+</script>
+</body>
+</html> 

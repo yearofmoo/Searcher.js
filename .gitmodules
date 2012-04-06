@@ -1,0 +1,3 @@
+[submodule "Source/MooTools-Class.Accessor"]
+	path = Source/MooTools-Class.Accessor
+	url = git://github.com/matsko/MooTools-Class.Accessor.git
