@@ -17,6 +17,7 @@ Searcher = new Class({
   options : {
     containerClassName : 'autocomplete-results',
     minSearchLength : 2,
+    clearResultsOnMinSearch : true,
     prepareSearch : function(search) {
       return search.trim();
     },
@@ -177,6 +178,9 @@ Searcher = new Class({
     if(data.length > this.options.minSearchLength) {
       this.request(data);
     }
+    else {
+      this.onMinSearch();
+    }
   },
 
   request : function(data) {
@@ -203,7 +207,11 @@ Searcher = new Class({
   },
 
   onBeforeSearch : function() {
-    if(this.getSearchString() != this.getPreviousSearchString()) { 
+    var str = this.getSearchString();
+    if(str.length == 0) {
+      this.onEmpty();
+    }
+    else if(str != this.getPreviousSearchString()) { 
       this.fireEvent('_search');
     }
   },
@@ -342,6 +350,16 @@ Searcher = new Class({
 
   onBlur : function() {
     this.fireEvent('blur');
+  },
+
+  onEmpty : function() {
+    this.clearResults();
+  },
+
+  onMinSearch : function() {
+    if(this.options.clearResultsOnMinSearch) {
+      this.clearResults();
+    }
   },
 
   destroy : function() {
@@ -645,7 +663,13 @@ Searcher.AutoComplete = new Class({
     else {
       this.hide();
     }
-  }
+  },
+
+  onMinSearch : function() {
+    if(this.options.clearResultsOnMinSearch) {
+      this.hide();
+    }
+  },
 
 });
 
@@ -668,6 +692,8 @@ Searcher.AutoComplete.Local = new Class({
   
   klass.implement({
 
+    Accessors : ['localResults'],
+
     options : {
       matchAnalyzer : function(result, search) {
         return result.title.contains(search);
@@ -679,14 +705,6 @@ Searcher.AutoComplete.Local = new Class({
       if(this.options.results) {
         this.setLocalResults(this.options.results);
       }
-    },
-
-    setLocalResults : function(hash) {
-      this.localResults = hash;
-    },
-
-    getLocalResults : function(hash) {
-      return this.localResults;
     },
 
     request : function(data) {
