@@ -665,6 +665,10 @@ Searcher.AutoComplete = new Class({
     }
   },
 
+  onEmpty : function() {
+    this.hide();
+  },
+
   onMinSearch : function() {
     if(this.options.clearResultsOnMinSearch) {
       this.hide();
