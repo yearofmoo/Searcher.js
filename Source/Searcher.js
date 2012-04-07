@@ -388,24 +388,36 @@ Searcher.AutoComplete = new Class({
     zIndex : null
   },
 
-  initialize : function(input,options) {
-    var container = this.createContainer();
+  initialize : function(input,container,options) {
+    if(arguments.length == 2) {
+      options = container;
+      container = this.createContainer();
+    }
     this.parent(input,container,options);
     this.position();
     this.hide();
   },
 
   createContainer : function() {
-    return new Element('div').inject(document.body);
+    return new Element('div',{
+      'styles':{
+        'position':'absolute'
+      }
+    }).inject(document.body);
+  },
+
+  isStaticContainer : function() {
+    return this.getContainer().getStyle('position') != 'absolute';
+  },
+
+  isPositionedContainer : function() {
+    return !this.isStaticContainer();
   },
 
   buildContainer : function() {
     this.parent();
     var container = this.getContainer();
-    container.setStyles({
-      'position':'absolute'
-    });
-    if(this.options.zIndex) {
+    if(this.isStaticContainer() && this.options.zIndex) {
       container.setStyle('z-index',this.options.zIndex);
     }
   },
@@ -456,16 +468,18 @@ Searcher.AutoComplete = new Class({
   },
 
   position : function() {
-    var proxy = this.getPositionProxyElement();
-    var coords = proxy.getCoordinates();
-    var x = coords['left'];
-    var y = coords['top'] + coords['height'];
-    var w = coords['width'];
-    this.getContainer().setStyles({
-      'left' : x,
-      'top' : y,
-      'width' : w
-    });
+    if(this.isPositionedContainer()) {
+      var proxy = this.getPositionProxyElement();
+      var coords = proxy.getCoordinates();
+      var x = coords['left'];
+      var y = coords['top'] + coords['height'];
+      var w = coords['width'];
+      this.getContainer().setStyles({
+        'left' : x,
+        'top' : y,
+        'width' : w
+      });
+    }
   },
 
   setPositionProxyElement : function(element) {
@@ -741,47 +755,74 @@ Searcher.AutoComplete.Local = new Class({
 
 Searcher.Local.Filterer = new Class({
 
-  Extends : Searcher.Local,
+  Extends : Searcher.Local
 
-  options : {
-    matchAnalyzer : function(result, search) {
-      return result.get('html').replace(/<\/?.+?>/g,'').contains(search);
-    } 
-  },
+});
 
-  initialize : function(input,container,resultsSelector,options) {
-    options = options || {};
-    delete options.results;
-    this.resultsSelector = resultsSelector;
-    this.parent(input,container,options);
-  },
+Searcher.AutoComplete.Local.Filterer = new Class({
 
-  getLocalResults : function() {
-    return this.getContainer().getElements(this.resultsSelector);
-  },
+  Extends : Searcher.AutoComplete.Local
 
-  getElementFromResult : function(result) {
-    return result;
-  },
+});
 
-  hideAllElements : function() {
-    this.getLocalResults().setStyle('display','none');
-  },
+[Searcher.AutoComplete.Local.Filterer,Searcher.Local.Filterer].each(function(klass) {
+  
+  klass.implement({
 
-  showElements : function(elements) {
-    $$(elements).setStyle('display','block');
-  },
+    options : {
+      matchAnalyzer : function(result, search) {
+        return result.get('html').replace(/<\/?.+?>/g,'').contains(search);
+      } 
+    },
 
-  buildResults : function(elements) {
-    this.destroyNoResultsElement();
-    this.hideAllElements();
-    this.showElements(elements);
-  },
+    initialize : function(input,container,resultsSelector,options) {
+      options = options || {};
+      delete options.results;
+      this.resultsSelector = resultsSelector;
+      this.parent(input,container,options);
+    },
 
-  clearResults : function() {
-    this.destroyNoResultsElement();
-    this.hideAllElements();
-  }
+    getLocalResults : function() {
+      return this.getContainer().getElements(this.resultsSelector);
+    },
+
+    getElementFromResult : function(result) {
+      return result;
+    },
+
+    hideAllElements : function() {
+      this.getLocalResults().setStyle('display','none');
+    },
+
+    showAllElements : function() {
+      this.getLocalResults().each(this.showElement,this);
+    },
+
+    showElements : function(elements) {
+      elements.each(this.showElement,this);
+    },
+
+    showElement : function(element) {
+      element.setStyle('display','block');
+    },
+
+    buildResults : function(elements) {
+      this.destroyNoResultsElement();
+      this.hideAllElements();
+      this.showElements(elements);
+      this.getContainer().getChildren().addClass(this.options.resultClassName);
+    },
+
+    hide : function() {
+      this.showAllElements();
+    },
+
+    clearResults : function() {
+      this.destroyNoResultsElement();
+      this.hideAllElements();
+    }
+
+  });
 
 });
 

@@ -7,14 +7,14 @@
   border:1px solid red;
   margin-bottom:30px;
 }
-#input, #autocomplete, #local, #local-autocomplete {
+#input, #autocomplete, #autocomplete-static, #local, #local-autocomplete {
   width:800px;
   padding:15px;
   font-size:1.5em;
   border:1px solid #ddd;
   margin-bottom:20px;
 }
-#container, @container2 {
+#container, #container2,#container-static {
   border:1px solid #ddd;
   padding:1em;
 }
@@ -40,6 +40,7 @@
 
 <body id="" class=""> 
   <div class="wrapper">
+    <h2>Searcher</h2>
     <form method="get" action="./results.php">
       <input type="text" id="input" placeholder="Search..." />
     </form>
@@ -49,12 +50,24 @@
   </div>
 
   <div class="wrapper">
+    <h2>Searcher.AutoComplete</h2>
     <form method="get" action="./results.php">
       <input type="text" id="autocomplete" placeholder="Search..." />
     </form>
   </div>
 
   <div class="wrapper">
+    <h2>Searcher.AutoComplete (static container)</h2>
+    <form method="get" action="./results.php">
+      <input type="text" id="autocomplete-static" placeholder="Search..." />
+    </form>
+    <div id="container-static">
+      Search for something...
+    </div>
+  </div>
+
+  <div class="wrapper">
+    <h2>Searcher.Local</h2>
     <form method="get" action="./results.php">
       <input type="text" id="local" placeholder="Search..." />
     </form>
@@ -64,9 +77,20 @@
   </div>
 
   <div class="wrapper">
+    <h2>Searcher.AutoComplete.Local</h2>
     <form method="get" action="./results.php">
       <input type="text" id="local-autocomplete" placeholder="Search..." />
     </form>
+  </div>
+
+  <div class="wrapper">
+    <h2>Searcher.AutoComplete.Local (static container)</h2>
+    <form method="get" action="./results.php">
+      <input type="text" id="local-autocomplete" placeholder="Search..." />
+    </form>
+    <div id="container2-static">
+      Search for something...
+    </div>
   </div>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/mootools/1.4.5/mootools-yui-compressed.js"></script>
 <script type="text/javascript" src="../Assets/MooTools-more.js"></script>
@@ -76,16 +100,44 @@
 window.addEvent('domready',function() {
 
   var searcher = new Searcher('input','container',{
-    id : 'searcher'
   });
 
   var autoComplete = new Searcher.AutoComplete('autocomplete',{
-    id : 'autoComplete',
+    onSelect : function(result) {
+    }
+  });
+
+  var autoComplete = new Searcher.AutoComplete('autocomplete-static','container-static',{
     onSelect : function(result) {
     }
   });
 
   var local = new Searcher.Local('local','container2',{
+    results : [{
+      title : 'red',
+      html : '<div>red</div>'    
+    },{
+      title : 'orange',
+      html : '<div>orange</div>'    
+    },{
+      title : 'blue',
+      html : '<div>blue</div>'    
+    },{
+      title : 'black',
+      html : '<div>black</div>'    
+    },{
+      title : 'blacker',
+      html : '<div>blacker</div>'    
+    },{
+      title : 'green',
+      html : '<div>green</div>'    
+    }]
+  });
+
+  var local = new Searcher.AutoComplete.Local('local-autocomplete',{
+    onSelect : function(result) {
+      alert(result.outerHTML);
+    },
     results : [{
       title : 'red',
       html : '<div>red</div>'    
