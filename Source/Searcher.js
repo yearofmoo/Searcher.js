@@ -805,7 +805,7 @@ Searcher.Local.Spotlight = new Class({
 
 });
 
-Searcher.Loaders = {}
+Searcher.Loaders = {};
 
 Searcher.Loaders.Spinner = {
 
