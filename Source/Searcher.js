@@ -746,15 +746,37 @@ Searcher.Local.Filterer = new Class({
     this.getLocalResults().setStyle('display','none');
   },
 
+  showElements : function(elements) {
+    $$(elements).setStyle('display','block');
+  },
+
   buildResults : function(elements) {
     this.destroyNoResultsElement();
     this.hideAllElements();
-    $$(elements).setStyle('display','block');
+    this.showElements(elements);
   },
 
   clearResults : function() {
     this.destroyNoResultsElement();
     this.hideAllElements();
+  }
+
+});
+
+Searcher.Local.Spotlight = new Class({
+
+  Extends : Searcher.Local.Filterer,
+
+  options : {
+    spotlightClassName : null 
+  },
+
+  hideAllElements : function() {
+    this.getLocalResults().removeClass(this.options.spotlightClassName);
+  },
+
+  buildResults : function(elements) {
+    $$(elements).addClass(this.options.spotlightClassName);
   }
 
 });
