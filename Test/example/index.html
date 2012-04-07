@@ -2,7 +2,12 @@
 <html lang="en"> 
 <head>
 <style type="text/css">
-#input {
+.wrapper {
+  padding:50px;
+  border:1px solid red;
+  margin-bottom:30px;
+}
+#input, #autocomplete {
   width:800px;
   padding:15px;
   font-size:1.5em;
@@ -13,17 +18,40 @@
   border:1px solid #ddd;
   padding:1em;
 }
+.result {
+  background:white;
+  border:1px solid #ddd;
+  padding:1em;
+}
+.autocomplete-results {
+  box-shadow:0px 0px 5px #999;
+}
+.result.active {
+  background:maroon;
+  color:white;
+  cursor:pointer;
+}
+.no-results {
+  padding:1em;
+  color:blue;
+}
 </style>
 </head> 
 
 <body id="" class=""> 
-  <div id="wrapper">
+  <div class="wrapper">
     <form method="get" action="./results.php">
       <input type="text" id="input" placeholder="Search..." />
     </form>
     <div id="container">
       Search for something...
     </div>
+  </div>
+
+  <div class="wrapper">
+    <form method="get" action="./results.php">
+      <input type="text" id="autocomplete" placeholder="Search..." />
+    </form>
   </div>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/mootools/1.4.5/mootools-yui-compressed.js"></script>
 <script type="text/javascript" src="../Assets/MooTools-more.js"></script>
@@ -33,7 +61,11 @@
 window.addEvent('domready',function() {
 
   var searcher = new Searcher('input','container',{
+    id : 'searcher'
+  });
 
+  var autoComplete = new Searcher.AutoComplete('autocomplete',{
+    id : 'autoComplete'
   });
 
 });
