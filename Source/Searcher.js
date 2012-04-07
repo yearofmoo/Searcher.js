@@ -755,13 +755,63 @@ Searcher.AutoComplete.Local = new Class({
 
 Searcher.Local.Filterer = new Class({
 
-  Extends : Searcher.Local
+  Extends : Searcher.Local,
+
+  styleResults : {
+
+  }
 
 });
 
 Searcher.AutoComplete.Local.Filterer = new Class({
 
-  Extends : Searcher.AutoComplete.Local
+  Extends : Searcher.AutoComplete.Local,
+
+  styleResults : function() {
+    this.getContainer().getChildren().addClass(this.options.resultClassName);
+  },
+
+  isVisibleResult : function(result) {
+    return result.getStyle('display')=='block';
+  },
+
+  getResults : function() {
+    return this.parent().filter(this.isVisibleResult,this);
+  },
+
+  getPreviousResult : function() {
+    var result;
+    try {
+      result = this.getActiveResult().getAllPrevious(this.getResultSelector()).filter(this.isVisibleResult,this)[0];
+      if(!result) {
+        throw new Error;
+      }
+    }
+    catch(e) {
+      result = this.getLastResult();
+    }
+    return result;
+  },
+
+  getNextResult : function() {
+    var result;
+    try {
+      result = this.getActiveResult().getAllNext(this.getResultSelector()).filter(this.isVisibleResult,this)[0];
+      if(!result) {
+        throw new Error;
+      }
+    }
+    catch(e) {
+      result = this.getFirstResult();
+    }
+    return result;
+  },
+
+  onSelect : function(result) {
+    this.parent(result);
+    this.deactivateResults();
+    this.clearSearch();
+  }
 
 });
 
@@ -818,7 +868,7 @@ Searcher.AutoComplete.Local.Filterer = new Class({
       this.destroyNoResultsElement();
       this.hideAllElements();
       this.showElements(elements);
-      this.getContainer().getChildren().addClass(this.options.resultClassName);
+      this.styleResults();
     },
 
     hide : function() {
