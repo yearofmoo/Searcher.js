@@ -782,6 +782,14 @@ Searcher.AutoComplete.Local.Filterer = new Class({
       this.parent(input,container,options);
     },
 
+    createContainer : function() {
+      return new Element('div',{
+        'styles':{
+          'position':'static'
+        }
+      }).inject(document.body);
+    },
+
     getLocalResults : function() {
       return this.getContainer().getElements(this.resultsSelector);
     },
