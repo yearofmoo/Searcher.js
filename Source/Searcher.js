@@ -167,11 +167,15 @@ Searcher = new Class({
       data = this.options.prepareSearch(data);
     }
     if(data.length > this.options.minSearchLength) {
-      this.getRequester().setOptions({
-        url : this.getURL(data),
-        method : this.getMethod() || 'GET'
-      }).send();
+      this.request(data);
     }
+  },
+
+  request : function(data) {
+    this.getRequester().setOptions({
+      url : this.getURL(data),
+      method : this.getMethod() || 'GET'
+    }).send();
   },
 
   onInput : function(event) {
@@ -236,6 +240,7 @@ Searcher = new Class({
     this.updateLoading();
     this.fireEvent('beforeResults');
     this.buildResults(html);
+    this.onResults();
     this.fireEvent('afterResults');
     this.onComplete();
   },
@@ -246,7 +251,6 @@ Searcher = new Class({
 
   buildResults : function(html) {
     this.getContainer().set('html',html);
-    this.onResults();
   },
 
   onFailure : function() {
@@ -341,10 +345,10 @@ Searcher.AutoComplete = new Class({
     hideOnOuterClick : true,
     updateSearchStringOnSelect : true,
     updateSearchStringByResult : null,
-    resultSelector : '.result',
-    additionalResultClass : null,
+    resultClassName : 'result',
     activeResultClassName : 'active',
     proxy : null,
+    zIndex : null
   },
 
   initialize : function(input,options) {
@@ -360,15 +364,19 @@ Searcher.AutoComplete = new Class({
 
   buildContainer : function() {
     this.parent();
-    this.getContainer().setStyles({
+    var container = this.getContainer();
+    container.setStyles({
       'position':'absolute'
     });
+    if(this.options.zIndex) {
+      container.setStyle('z-index',this.options.zIndex);
+    }
   },
 
   setupEvents : function() {
     this.parent();
     var events = {};
-    var relay = 'relay('+this.options.resultSelector+')';
+    var relay = 'relay('+this.getResultSelector()+')';
     events['click:'+relay] = this.onClick;
     events['mouseenter:'+relay] = this.onHover;
     this.getContainer().addEvents(events);
@@ -376,6 +384,10 @@ Searcher.AutoComplete = new Class({
     if(this.options.hideOnOuterClick) {
       this.getContainer().addEvent('outerClick',this.hide);
     }
+  },
+
+  getResultSelector : function() {
+    return '.' + this.options.resultClassName;
   },
 
   onClick : function(event,target) {
@@ -433,7 +445,7 @@ Searcher.AutoComplete = new Class({
   getPreviousResult : function() {
     var result;
     try {
-      result = this.getActiveResult().getPrevious(this.options.resultSelector);
+      result = this.getActiveResult().getPrevious(this.getResultSelector());
       if(!result) {
         throw new Error;
       }
@@ -447,7 +459,7 @@ Searcher.AutoComplete = new Class({
   getNextResult : function() {
     var result;
     try {
-      result = this.getActiveResult().getNext(this.options.resultSelector);
+      result = this.getActiveResult().getNext(this.getResultSelector());
       if(!result) {
         throw new Error;
       }
@@ -511,9 +523,6 @@ Searcher.AutoComplete = new Class({
     if(this.options.hoverFirstResult) {
       this.onHover(this.getFirstResult());
     }
-    if(this.options.additionalResultClass) {
-      this.getResults().addClass(this.options.additionalResultClass);
-    }
     this.position();
     this.show();
   },
@@ -536,11 +545,11 @@ Searcher.AutoComplete = new Class({
   },
 
   getActiveResult : function() {
-    return this.getContainer().getElement(this.options.resultSelector + '.' + this.options.activeResultClassName);
+    return this.getContainer().getElement(this.getResultSelector() + '.' + this.options.activeResultClassName);
   },
 
   getResults : function() {
-    return this.getContainer().getElements(this.options.resultSelector);
+    return this.getContainer().getElements(this.getResultSelector());
   },
 
   getResult : function(index) {
@@ -609,6 +618,77 @@ Searcher.AutoComplete = new Class({
       this.hide();
     }
   }
+
+});
+
+Searcher.Local = new Class({
+  Extends : Searcher
+});
+
+Searcher.AutoComplete.Local = new Class({
+
+  Extends : Searcher.AutoComplete,
+
+  buildResults : function(html) {
+    this.parent(html);
+    this.getContainer().getChildren().addClass(this.options.resultClassName);
+  }
+
+});
+
+[Searcher.Local,Searcher.AutoComplete.Local].each(function(klass) {
+  
+  klass.implement({
+
+    options : {
+      matchAnalyzer : null
+    },
+
+    initialize : function() {
+      this.parent.apply(this,arguments);
+      if(this.options.results) {
+        this.setLocalResults(this.options.results);
+      }
+    },
+
+    setLocalResults : function(hash) {
+      this.localResults = hash;
+    },
+
+    getLocalResults : function(hash) {
+      return this.localResults;
+    },
+
+    request : function(data) {
+      this.onRequest();
+      var html = '';
+      this.getLocalResults().each(function(result) {
+        if(this.isMatchingResult(result,data)) {
+          html += this.getElementFromResult(result);
+        }
+      },this);
+      this.onResponse(html);
+    },
+
+    isMatchingResult : function(result,search) {
+      if(this.options.matchAnalyzer) {
+        return this.options.matchAnalyzer(result,search);
+      }
+      else {
+        return result.title.contains(search);
+      }
+    },
+
+    getElementFromResult : function(result) {
+      if(result.html) {
+        return result.html;
+      }
+      else if(result.element) {
+        return result.element.get('html');
+      }
+    }
+
+  });
 
 });
 
