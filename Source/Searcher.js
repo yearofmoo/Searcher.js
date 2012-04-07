@@ -775,9 +775,16 @@ Searcher.Local.Spotlight = new Class({
     this.getLocalResults().removeClass(this.options.spotlightClassName);
   },
 
-  buildResults : function(elements) {
+  showElements : function(elements) {
     $$(elements).addClass(this.options.spotlightClassName);
-  }
+  },
+
+  buildResults : function(elements) {
+    this.hideAllElements();
+    this.showElements(elements);
+  },
+
+  onNoResults : function() { }
 
 });
 
