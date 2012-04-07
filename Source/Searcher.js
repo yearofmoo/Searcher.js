@@ -41,8 +41,16 @@ Searcher = new Class({
   },
 
   initialize : function(input,container,options) {
-    this.setInput(document.id(input));
-    this.setContainer(document.id(container));
+    input = document.id(input);
+    if(!input) {
+      throw new Error('Searcher.js: input element not found');
+    }
+    container = document.id(container);
+    if(!container) {
+      throw new Error('Searcher.js: container element not found');
+    }
+    this.setInput(input);
+    this.setContainer(container);
     this.setOptions(options);
     this.buildOptions();
     this.buildInput();
@@ -213,6 +221,13 @@ Searcher = new Class({
     }
   },
 
+  destroyNoResultsElement : function() {
+    try {
+      this.getContainer().getElement('.'+this.options.noResultsClassName).destroy();
+    }
+    catch(e) { }
+  },
+
   onNoResults : function() {
     this.clearResults();
     if(this.options.whenNoResults) {
@@ -250,6 +265,9 @@ Searcher = new Class({
   },
 
   buildResults : function(html) {
+    if(typeOf(html) == 'array') {
+      html = html.join('');
+    }
     this.getContainer().set('html',html);
   },
 
@@ -337,9 +355,10 @@ Searcher.AutoComplete = new Class({
 
   Extends : Searcher,
 
-  Binds : ['show','hide','onSelect','onClick','onHover'],  
+  Binds : ['show','hide','delayHide','onSelect','onClick','onHover'],  
 
   options : {
+    maxResults : 0,
     hoverFirstResult : true,
     hideOnSelect : true,
     hideOnOuterClick : true,
@@ -382,7 +401,7 @@ Searcher.AutoComplete = new Class({
     this.getContainer().addEvents(events);
 
     if(this.options.hideOnOuterClick) {
-      this.getContainer().addEvent('outerClick',this.hide);
+      this.getContainer().addEvent('outerClick',this.delayHide);
     }
   },
 
@@ -527,6 +546,11 @@ Searcher.AutoComplete = new Class({
     this.show();
   },
 
+  onRequest : function() {
+    this.parent();
+    this.position();
+  },
+
   deactivateResults : function() {
     this.getResults().removeClass(this.options.activeResultClassName);
   },
@@ -580,6 +604,10 @@ Searcher.AutoComplete = new Class({
     this.getContainer().setStyle('display','none');
   },
 
+  delayHide : function(delay) {
+    this.hide.delay(delay || 100,this);
+  },
+
   isVisible : function() {
     return ! this.isHidden();
   },
@@ -597,7 +625,7 @@ Searcher.AutoComplete = new Class({
 
   onBlur : function() {
     this.parent();
-    this.hide();
+    this.delayHide();
   },
 
   onEscape : function() {
@@ -629,8 +657,8 @@ Searcher.AutoComplete.Local = new Class({
 
   Extends : Searcher.AutoComplete,
 
-  buildResults : function(html) {
-    this.parent(html);
+  buildResults : function(results) {
+    this.parent(results);
     this.getContainer().getChildren().addClass(this.options.resultClassName);
   }
 
@@ -641,7 +669,9 @@ Searcher.AutoComplete.Local = new Class({
   klass.implement({
 
     options : {
-      matchAnalyzer : null
+      matchAnalyzer : function(result, search) {
+        return result.title.contains(search);
+      }
     },
 
     initialize : function() {
@@ -661,22 +691,17 @@ Searcher.AutoComplete.Local = new Class({
 
     request : function(data) {
       this.onRequest();
-      var html = '';
+      var results = [];
       this.getLocalResults().each(function(result) {
         if(this.isMatchingResult(result,data)) {
-          html += this.getElementFromResult(result);
+          results.push(this.getElementFromResult(result));
         }
       },this);
-      this.onResponse(html);
+      this.onResponse(results);
     },
 
     isMatchingResult : function(result,search) {
-      if(this.options.matchAnalyzer) {
-        return this.options.matchAnalyzer(result,search);
-      }
-      else {
-        return result.title.contains(search);
-      }
+      return this.options.matchAnalyzer(result,search);
     },
 
     getElementFromResult : function(result) {
@@ -689,6 +714,48 @@ Searcher.AutoComplete.Local = new Class({
     }
 
   });
+
+});
+
+Searcher.Local.Filterer = new Class({
+
+  Extends : Searcher.Local,
+
+  options : {
+    matchAnalyzer : function(result, search) {
+      return result.get('html').replace(/<\/?.+?>/g,'').contains(search);
+    } 
+  },
+
+  initialize : function(input,container,resultsSelector,options) {
+    options = options || {};
+    delete options.results;
+    this.resultsSelector = resultsSelector;
+    this.parent(input,container,options);
+  },
+
+  getLocalResults : function() {
+    return this.getContainer().getElements(this.resultsSelector);
+  },
+
+  getElementFromResult : function(result) {
+    return result;
+  },
+
+  hideAllElements : function() {
+    this.getLocalResults().setStyle('display','none');
+  },
+
+  buildResults : function(elements) {
+    this.destroyNoResultsElement();
+    this.hideAllElements();
+    $$(elements).setStyle('display','block');
+  },
+
+  clearResults : function() {
+    this.destroyNoResultsElement();
+    this.hideAllElements();
+  }
 
 });
 

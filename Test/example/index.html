@@ -109,6 +109,9 @@ window.addEvent('domready',function() {
   });
 
   var local = new Searcher.AutoComplete.Local('local-autocomplete',{
+    onSelect : function(result) {
+      alert(result.outerHTML);
+    },
     results : [{
       title : 'red',
       html : '<div>red</div>'    

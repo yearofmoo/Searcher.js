@@ -1,0 +1,74 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+<head>
+<style type="text/css">
+.wrapper {
+  padding:50px;
+  border:1px solid red;
+  margin-bottom:30px;
+}
+#input, #autocomplete, #local, #local-autocomplete {
+  width:800px;
+  padding:15px;
+  font-size:1.5em;
+  border:1px solid #ddd;
+  margin-bottom:20px;
+}
+#container, @container2 {
+  border:1px solid #ddd;
+  padding:1em;
+}
+.result {
+  background:white;
+  border:1px solid #ddd;
+  padding:1em;
+}
+.autocomplete-results {
+  box-shadow:0px 0px 5px #999;
+}
+.result.active {
+  background:maroon;
+  color:white;
+  cursor:pointer;
+}
+.no-results {
+  padding:1em;
+  color:blue;
+}
+</style>
+</head> 
+
+<body id="" class="">
+  <div class="wrapper">
+    <form method="get" action="./results.php">
+      <input type="text" id="input" placeholder="Search..." />
+    </form>
+    <div id="records">
+      <div class="record">
+        <h6>Record 1</h6>
+        <p>Keywords: one, two, three four, five, six, seven</p>
+      </div>
+      <div class="record">
+        <h6>Record 2</h6>
+        <p>Keywords: red, blue, green, black, orange</p>
+      </div>
+      <div class="record">
+        <h6>Record 3</h6>
+        <p>Keywords: yes, no, maybe, ok, for sure, possibly</p>
+      </div>
+    </div>
+  </div>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/mootools/1.4.5/mootools-yui-compressed.js"></script>
+<script type="text/javascript" src="../Assets/MooTools-more.js"></script>
+<script type="text/javascript" src="../../Source/MooTools-Class.Accessor/Source/MooTools-Class.Accessor.js"></script>
+<script type="text/javascript" src="../../Source/Searcher.js"></script>
+<script type="text/javascript">
+window.addEvent('domready',function() {
+
+  var searcher = new Searcher.Local.Filterer('input','records','.record',{
+  });
+
+});
+</script>
+</body>
+</html> 
