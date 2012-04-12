@@ -246,11 +246,13 @@ Searcher = new Class({
   },
 
   onRequest : function() {
+    this.fireEvent('request');
     this.setPreviousSearchString(this.getSearchString());
     this.showLoading();
   },
 
   onResponse : function(html) {
+    this.fireEvent('response');
     if(!html || html.length == 0) {
       this.onNoResults();
     }
@@ -328,12 +330,14 @@ Searcher = new Class({
 
   showLoading : function() {
     if(this.options.showLoading) {
+      this.fireEvent('showLoading');
       this.getLoadingObject().show(this.getInput(),this.getContainer());
     }
   },
 
   hideLoading : function() {
     if(this.options.showLoading) {
+      this.fireEvent('hideLoading');
       this.getLoadingObject().hide(this.getInput(),this.getContainer());
     }
   },
