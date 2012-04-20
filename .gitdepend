@@ -1,0 +1,2 @@
+- repo: git://github.com/matsko/MooTools-Class.Accessor.git
+  path: Source/include/MooTools-Class.Accessor
