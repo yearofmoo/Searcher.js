@@ -1,2 +1,4 @@
 - repo: git://github.com/matsko/MooTools-Class.Accessor.git
   path: Source/include/MooTools-Class.Accessor
+- repo: git://github.com/matsko/MooTools-Event.outerClick.git
+  path: Source/include/MooTools-Event.outerClick

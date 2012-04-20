@@ -1,3 +1,32 @@
+/*
+---
+description: Searcher.js is a massive wrapper for all UI searching functionality on a webpage
+
+license: MIT License http://www.opensource.org/licenses/mit-license.php
+
+authors:
+- Matias Niemelä (matias [at] yearofmoo [dot] com)
+
+home:
+- http://www.yearofmoo.com/Searcher.js
+
+requires:
+- MooTools Core 1.3+
+- more (Class.Binds, Fx.Scroll)
+- MooTools-Class.Accessor
+- MooTools-Event.outerClick
+
+provides: 
+- Searcher
+- Searcher.AutoComplete
+- Searcher.Local
+- Searcher.AutoComplete.Local
+- Searcher.Local.Filterer
+- Searcher.AutoComplete.Local.Filterer
+- Searcher.Local.Spotlight
+- Searcher.Loaders
+
+*/
 var Searcher;
 
 (function() {
