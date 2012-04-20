@@ -1,0 +1,18 @@
+src:
+  input:
+    - Source/files/Searcher.Base.js
+    - Source/files/Searcher.AutoComplete.js
+    - Source/files/Searcher.Local.js
+    - Source/files/Searcher.Local.Filterer.js
+    - Source/files/Searcher.Local.Spotlight.js
+    - Source/files/Searcher.Loaders.js
+  output:
+    - Source/Searcher.js
+
+min:
+  filters:
+    - cat Source/Searcher.js | jsmin > %{output}
+  input:
+    - Source/Searcher.js
+  output:
+    - Source/Searcher.min.js
