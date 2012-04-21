@@ -27,6 +27,16 @@ provides:
 - Searcher.Loaders
 
 */
+Locale.define('en-US','Searcher',{
+
+  messages : {
+    idle : 'Search for something...',
+    noResults : 'No results found for %(SEARCH)',
+    loading : 'Searching Please Wait...',
+    minSearch : 'Please enter %(MIN) or more characters...'
+  }
+
+});
 var Searcher;
 
 (function() {
@@ -41,11 +51,11 @@ Searcher = new Class({
 
   Accessors : ['method','URL','input','container','loaderOptions','XHR','previousSearchString'],
 
-  Binds : ['onResponse','onFailure','onComplete','onRequest','onTimeout','search','onEscape','onFocus','onBlur'],
+  Binds : ['onResponse','onFailure','onComplete','onRequest','onTimeout','search','onEscape','onFocus','onBlur','removeAnchor'],
 
   options : {
     containerClassName : 'autocomplete-results',
-    minSearchLength : 2,
+    minSearchLength : 3,
     clearResultsOnMinSearch : true,
     prepareSearch : function(search) {
       return search.trim();
@@ -53,7 +63,12 @@ Searcher = new Class({
     showLoading : true,
     loader : 'spinner',
     replaceURL : function(search,url) {
-      return url + (url.contains('?') ? '&' : '?') + 'q=' + search;
+      var base = url + (url.contains('?') ? '&' : '?');
+      base += 'q=' + search;
+      this.getAnchors().each(function(anchor) {
+        base += '&' + anchor.getSearchString();
+      });
+      return base;
     },
     keyInputDelay : 250,
     requestOptions : {
@@ -64,13 +79,26 @@ Searcher = new Class({
     },
     containerOptions : {
     },
-    whenNoResults : function(container) {
-      container.set('html','No Results Found');
+    whenNoResults : null,
+    noResultsClassName : 'no-results',
+    anchorStageElementOptions : {
+      'class':'searcher-anchor-stage'
     },
-    noResultsClassName : 'no-results'
+    anchorOptions : {
+
+    },
+    messageElementOptions : 'searcher-message',
+    clearResultsOnMessageDisplay : true,
+    messages : {
+      idle : Locale.get('Searcher.messages.idle'),
+      noResults : Locale.get('Searcher.messages.noResults'),
+      loading : Locale.get('Searcher.messages.loading'),
+      minSearch : Locale.get('Searcher.messages.minSearch')
+    }
   },
 
   initialize : function(input,container,options) {
+    this.options.replaceURL = this.options.replaceURL.bind(this);
     input = document.id(input);
     if(!input) {
       throw new Error('Searcher.js: input element not found');
@@ -204,7 +232,7 @@ Searcher = new Class({
     if(this.options.prepareSearch) {
       data = this.options.prepareSearch(data);
     }
-    if(data.length > this.options.minSearchLength) {
+    if(data.length >= this.options.minSearchLength) {
       this.request(data);
     }
     else {
@@ -212,7 +240,14 @@ Searcher = new Class({
     }
   },
 
+  isRequesting : function() {
+    return this.getRequester().isRunning();
+  },
+
   request : function(data) {
+    if(this.isRequesting()) {
+      this.cancel();
+    }
     this.getRequester().setOptions({
       url : this.getURL(data),
       method : this.getMethod() || 'GET'
@@ -251,7 +286,7 @@ Searcher = new Class({
 
   onEscape : function() {
     if(this.isEmptySearch()) {
-      this.clearResults();
+      this.onEmpty();
     }
     else {
       this.clearSearch();
@@ -269,7 +304,10 @@ Searcher = new Class({
     this.clearResults();
     if(this.options.whenNoResults) {
       var noResults = new Element('div').addClass(this.options.noResultsClassName).inject(this.getContainer());
-      this.options.whenNoResults(noResults);
+      this.options.whenNoResults(this, noResults);
+    }
+    else {
+      this.displayMessage(this.options.messages.noResults);
     }
     this.fireEvent('noResults');
   },
@@ -324,8 +362,6 @@ Searcher = new Class({
   },
 
   onCancel : function() {
-    this.fireEvent('cancel');
-    this.clear();
   },
 
   cancel : function() {
@@ -361,6 +397,7 @@ Searcher = new Class({
     if(this.options.showLoading) {
       this.fireEvent('showLoading');
       this.getLoadingObject().show(this.getInput(),this.getContainer());
+      this.displayMessage(this.options.messages.loading);
     }
   },
 
@@ -387,17 +424,117 @@ Searcher = new Class({
 
   onEmpty : function() {
     this.clearResults();
+    this.displayMessage(this.options.messages.idle);
   },
 
   onMinSearch : function() {
     if(this.options.clearResultsOnMinSearch) {
       this.clearResults();
     }
+
+    this.displayMessage(this.options.messages.minSearch);
+  },
+
+  prepareMessage : function(text) {
+    text = text.replace('%(MIN)',this.options.minSearchLength);
+    text = text.replace('%(SEARCH)',this.getSearchString());
+    return text;
+  },
+
+  displayMessage : function(message) {
+    if(message && message.length > 0) {
+      message = this.prepareMessage(message);
+      var container = this.getContainer();
+      if(this.options.clearResultsOnMessageDisplay) {
+        container.empty();
+      }
+      var id = 'searcher-message-element';
+      var elm = container.getElement('#'+id);
+      if(elm) {
+        elm.set('html',message);
+      }
+      else {
+        elm = new Element('div',this.options.messageElementOptions).set('id',id).set('html',message)
+      }
+      elm.inject(container,'top');
+    }
   },
 
   destroy : function() {
     this.getContainer().destroy();
     this.getInput().destroy();
+  },
+
+  addAnchor : function(anchor) {
+    anchor.setOptions(this.options.anchorOptions);
+    anchor.addEvents({
+      'destroy':this.removeAnchor
+    });
+    this.getAnchorStage().adopt(anchor);
+    this.getAnchors().push(anchor);
+  },
+
+  getAnchorStage : function() {
+    if(!this.anchorStage) {
+      this.anchorStage = new Element('div',this.options.anchorStageElementOptions).inject(this.getInput(),'before');
+    }
+    return this.anchorStage;
+  },
+
+  getAnchors : function() {
+    if(!this.anchors) {
+      this.anchors = [];
+    }
+    return this.anchors;
+  },
+
+  getTotalAnchors : function() {
+    return this.getAnchors().length;
+  },
+
+  getAnchor : function(anchor) {
+    if(instanceOf(anchor,Searcher.Anchor)) {
+      return anchor;
+    }
+    else if(typeOf(anchor) == 'integer') {
+      return this.getAnchorByIndex(anchor);
+    }
+    else {
+      return this.getAnchorByText(anchor);
+    }
+  },
+
+  getAnchorByIndex : function(index) {
+    if(index >= 0 && index < this.getTotalAnchors()) {
+      return this.getAnchors()[index];
+    }
+  },
+
+  getAnchorByText : function(text) {
+    var anchors = this.getAnchors();
+    for(var i=0;i<anchors.length;i++) {
+      var anchor = anchors[i];
+      if(anchor.equals(text)) {
+        return anchor;
+      }
+    }
+  },
+
+  removeAnchor : function(a) {
+    a = this.getAnchor(a);
+    for(var i=0;i<this.anchors.length;i++) {
+      var anchor = this.anchors[i];
+      if(anchor.equals(a)) {
+        anchor.destroy();
+        delete this.anchors[i];
+        break;
+      }
+    }
+    this.anchors = this.anchors.clean();
+  },
+
+  addAnchors : function(anchors) {
+    anchors.each(this.addAnchor,this);
   }
 
 });

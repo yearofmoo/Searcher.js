@@ -1,8 +1,8 @@
 src:
   input:
-    - Source/src/Searcher.Licence.txt
-    - Source/src/Searcher.Base.js
+    - Source/src/Searcher.License.txt
     - Source/src/Searcher.Locale.js
+    - Source/src/Searcher.Base.js
     - Source/src/Searcher.AutoComplete.js
     - Source/src/Searcher.Local.js
     - Source/src/Searcher.Local.Filterer.js

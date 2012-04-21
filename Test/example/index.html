@@ -7,14 +7,51 @@
   border:1px solid red;
   margin-bottom:30px;
 }
-#input, #autocomplete, #autocomplete-static, #local, #local-autocomplete {
+#input, #autocomplete, #autocomplete-static, #local, #local-autocomplete, .input-wrapper {
   width:800px;
   padding:15px;
   font-size:1.5em;
   border:1px solid #ddd;
   margin-bottom:20px;
 }
-#container, #container2,#container-static {
+.searcher-anchor-stage {
+  display:inline-block;
+  vertical-align:middle;
+}
+.searcher-anchor {
+  background:#eee;
+  display:inline-block;
+  margin-right:10px;
+  padding:5px;
+  border-radius:10px;
+  position:relative;
+}
+.searcher-anchor .anchor-close {
+  top:-15px;
+  right:-18px;
+  width:30px;
+  height:30px;
+  position:absolute;
+  cursor:pointer;
+  background:url(../Assets/close.png) center center no-repeat;
+}
+.searcher-anchor.red {
+  background:red;
+}
+#inputA {
+  display:inline-block;
+  vertical-align:middle;
+  border:0;
+  font-size:inherit;
+  padding:0;
+  margin:0;
+  width:200px;
+}
+#inputA:focus {
+  outline:0;
+  border:0;
+}
+#container, #container2,#container-static,#containerA {
   border:1px solid #ddd;
   padding:1em;
 }
@@ -45,6 +82,18 @@
       <input type="text" id="input" placeholder="Search..." />
     </form>
     <div id="container">
+      Search for something...
+    </div>
+  </div>
+
+  <div class="wrapper">
+    <h2>Searcher (with anchors)</h2>
+    <form method="get" action="./results.php">
+      <div class="input-wrapper">
+        <input type="text" id="inputA" placeholder="Search..." />
+      </div>
+    </form>
+    <div id="containerA">
       Search for something...
     </div>
   </div>
@@ -96,7 +145,9 @@
 <script type="text/javascript" src="../Assets/MooTools-more.js"></script>
 <script type="text/javascript" src="../../Source/include/MooTools-Class.Accessor/Source/MooTools-Class.Accessor.js"></script>
 <script type="text/javascript" src="../../Source/include/MooTools-Event.outerClick/Source/Event.outerClick.js"></script>
+<script type="text/javascript" src="../../Source/src/Searcher.Locale.js"></script>
 <script type="text/javascript" src="../../Source/src/Searcher.Base.js"></script>
+<script type="text/javascript" src="../../Source/src/Searcher.Anchor.js"></script>
 <script type="text/javascript" src="../../Source/src/Searcher.Locale.js"></script>
 <script type="text/javascript" src="../../Source/src/Searcher.AutoComplete.js"></script>
 <script type="text/javascript" src="../../Source/src/Searcher.Local.js"></script>
@@ -108,6 +159,11 @@ window.addEvent('domready',function() {
 
   var searcher = new Searcher('input','container',{
   });
+
+  var searcherA = new Searcher('inputA','containerA',{
+  });
+  var anchor1 = new Searcher.Anchor('Shaded Colours',{ color : 'shade'});
+  searcherA.addAnchor(anchor1);
 
   var autoComplete = new Searcher.AutoComplete('autocomplete',{
     onSelect : function(result) {
