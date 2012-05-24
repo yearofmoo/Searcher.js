@@ -422,7 +422,15 @@ Searcher = new Class({
   },
 
   destroy : function() {
+    this.destroyContainer();
+    this.destroyInput();
+  },
+
+  destroyContainer : function() {
     this.getContainer().destroy();
+  },
+
+  destroyInput : function() {
     this.getInput().destroy();
   },
 

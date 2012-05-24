@@ -8,6 +8,7 @@ src:
     - Source/src/Searcher.Local.Filterer.js
     - Source/src/Searcher.Local.Spotlight.js
     - Source/src/Searcher.Loaders.js
+    - Source/src/Searcher.Anchor.js
   output:
     - Source/Searcher.js
 
